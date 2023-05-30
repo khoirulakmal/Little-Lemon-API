@@ -7,13 +7,15 @@ from .serializers import *
 from .permissions import *
 from django.contrib.auth.models import User, Group
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from datetime import datetime
 from rest_framework.exceptions import NotFound
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 
-# Create your views here.
+
+# TODO MenuItemList and MenuitemDetail Permission can be refactor (Find a way to do it)
 class MenuItemList(generics.ListCreateAPIView):
     queryset = MenuItem.objects.all()
     serializer_class = MenuItemSerializer
@@ -25,6 +27,8 @@ class MenuItemList(generics.ListCreateAPIView):
          'PUT': ['Manager'],
          'DELETE': ['Manager'],
      }
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['category', 'title', 'price']
     
 class MenuItemDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = MenuItem.objects.all()
@@ -33,12 +37,13 @@ class MenuItemDetail(generics.RetrieveUpdateDestroyAPIView):
 class UserList(generics.ListCreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsManager]
+    permission_classes = [IsManager|IsAdminUser]
     User_Group = {
         'manager':'Manager',
         'delivery-crew':'Delivery Crew',
     }
-
+    
+    # Get user list based on url slug
     def list(self, request, **kwargs):
         # get the user request group
         slug = kwargs['group']
@@ -50,6 +55,7 @@ class UserList(generics.ListCreateAPIView):
         serializer = UserSerializer(queryset, many=True)
         return Response(serializer.data)
     
+    # Assign user to group based on url slug
     def create(self, request, **kwargs):
         username = request.data.get('username', None)
         if not username:
@@ -68,10 +74,10 @@ class UserList(generics.ListCreateAPIView):
 
         # serialize the user object and return the response
         serializer = self.get_serializer(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({'message': f'User added to {self.User_Group[slug]} group'}, status=status.HTTP_200_OK)
   
 class UserDelete(APIView):
-    permission_classes = [IsManager]
+    permission_classes = [IsManager|IsAdminUser]
     User_Group = {
         'manager':'Manager',
         'delivery-crew':'Delivery Crew',
@@ -127,6 +133,8 @@ class CartItemList(generics.ListCreateAPIView):
 class OrderList(generics.ListCreateAPIView):
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['delivery', 'status', 'title']
     
     def get_queryset(self):
         user_groups = self.request.user.groups.all()
