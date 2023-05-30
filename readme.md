@@ -30,3 +30,49 @@ This project implement daily throttling at 10 request/day for anonymous user and
         'user': '20/day'
     }
 </code>
+
+
+## API Endpoints:
+
+#### User Registration and Token Generation Endpoints:
+
+• /api/users 
+• /api/users/users/me/ 
+• /token/login/
+
+#### Menu Item Endpoints:
+
+• /api/menu-items 
+• /api/menu-items/{menuItem} 
+
+#### User group management endpoints:
+
+• /api/groups/manager/users 
+• /api/groups/manager/users 
+• /api/groups/manager/users/{userId} 
+• /api/groups/delivery-crew/users 
+• /api/groups/delivery-crew/users 
+• /api/groups/delivery-crew/users/{userId}
+
+#### Cart management endpoints:
+
+• /api/cart/menu-items 
+
+#### Order management endpoints:
+
+• /api/orders 
+• /api/orders/{orderId} 
+
+## How to run 
+
+pipenv shell
+
+pipenv install 
+
+python manage.py makemigrations
+
+python manage.py migrate
+
+python manage.py createsuperuser
+
+python manage.py runserver
